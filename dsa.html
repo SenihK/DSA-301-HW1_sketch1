@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DSA 301 - Project 1 Final Submission</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 40px; background: #fff; color: #1a1a1a; }
+        .container { max-width: 1300px; margin: auto; padding: 40px; border: 1px solid #e0e0e0; border-radius: 20px; box-shadow: 0 10px 50px rgba(0,0,0,0.05); }
+        h1 { text-align: center; font-size: 32px; font-weight: 900; color: #2d3436; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #636e72; font-style: italic; margin-bottom: 30px; }
+        .rationale-container { margin-top: 50px; border-top: 3px solid #2d3436; padding-top: 30px; }
+        .rationale-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
+        h2 { font-size: 24px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        h4 { color: #d63031; text-transform: uppercase; font-size: 13px; letter-spacing: 1.2px; margin-bottom: 10px; }
+        p, li { font-size: 15px; line-height: 1.8; color: #2d3436; text-align: justify; }
+        .highlight { font-weight: bold; color: #000; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Social Progress vs. Demographic Decline in Türkiye (2009-2024)</h1>
+    <p class="subtitle">An analysis of how urbanization and education influence reproductive and marital trends.</p>
+    
+    <div id="viz"></div>
+
+    <div class="rationale-container">
+        <h2>Design Decisions & Personal Reflection</h2>
+        <div class="rationale-columns">
+            <div>
+                <h4>Encoding & Normalization Strategy</h4>
+                <p>For this task, I decided to implement a <span class="highlight">Normalized Index Chart</span> because comparing absolute population counts (millions) with literacy rates (percentages) in a single view is traditionally problematic. By setting 2009 as my baseline (Index 100), I successfully shifted the focus from "how many" to "how fast." In terms of <b>Marks and Channels</b>, I used <b>lines</b> to represent temporal change, where the <b>spatial position</b> on the Y-axis encodes the relative growth velocity. This choice maximizes <b>expressiveness</b>, allowing us to see the "Scissors Effect"—the dramatic divergence between social development and demographic cooling.</p>
+                
+                <h4>Gestalt Principles in Action</h4>
+                <p>I didn't just want a pretty chart; I wanted it to be functional. I heavily relied on the <span class="highlight">Law of Proximity</span> by using <b>Direct Labeling</b>. By placing labels at the very end of each line path, I eliminated the traditional legend. This design choice drastically reduces <b>cognitive load</b>, as the viewer's eye no longer needs to jump back and forth between a color box and the data. Furthermore, I utilized the <span class="highlight">Law of Similarity</span> to categorize my data: I grouped city populations with <b>dashed lines</b> to provide context, while using <b>thick solid lines</b> for my primary research indicators to draw immediate attention to the core story.</p>
+            </div>
+            <div>
+                <h4>Practical Usefulness & Insight</h4>
+                <p>This visualization is particularly useful for sociologists and urban planners. It provides a "big picture" view of Türkiye’s changing social fabric. One can clearly observe that as Muğla experiences rapid urbanization and the national Literacy Rate climbs, the Birth and Marriage rates experience an almost symmetrical decline. This inverse correlation suggests that increased social awareness and urban living costs are primary drivers of demographic shifts. The use of <b>High-Contrast Hue</b> encoding ensures that each city is uniquely identifiable, preventing visual interference in crowded areas of the plot.</p>
+                
+                <h4>Strengths & Critical Limitations</h4>
+                <p>The primary strength of this design is its ability to reveal <b>hidden correlations</b> between disparate variables. However, a notable weakness is the sacrifice of <b>absolute precision</b>. While the viewer can easily see that Muğla grew by ~34%, they cannot determine the exact population count without interacting with the tooltips. I chose to accept this trade-off because my research question focuses on <i>trends and influence</i> rather than exact census figures. This prioritization of <b>Effectiveness</b> over raw data density makes the visualization more accessible for storytelling.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const years = [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024];
+    
+    const data = {
+        "Muğla": [802381, 817503, 838324, 851145, 866665, 894509, 908877, 923773, 938751, 967487, 983142, 1000773, 1021141, 1048185, 1066736, 1081867],
+        "Ankara": [4650802, 4771716, 4890893, 4965542, 5045083, 5150072, 5270575, 5346518, 5445026, 5503985, 5639076, 5663322, 5747325, 5782285, 5803482, 5864049],
+        "İstanbul": [12915158, 13255685, 13624240, 13854740, 14160467, 14377018, 14657434, 14804116, 15029231, 15067724, 15519267, 15462452, 15840900, 15907951, 15655924, 15701602],
+        "İzmir": [3868308, 3948848, 4005459, 4061074, 4113028, 4168415, 4223545, 4279677, 4320519, 4367251, 4394694, 4425789, 4462056, 4479525, 4484000, 4493242],
+        "Adana": [2062226, 2085225, 2108805, 2125635, 2149260, 2165595, 2183167, 2201670, 2216475, 2220484, 2237940, 2258718, 2263373, 2274106, 2270298, 2280484],
+        "Van": [1022310, 1035418, 1059734, 1051975, 1070113, 1085542, 1096397, 1100190, 1106891, 1123784, 1136757, 1149342, 1141015, 1128749, 1127624, 1118087],
+        "Literacy": [92.47, 93.96, 95.13, 95.78, 96.04, 96.13, 96.22, 96.50, 96.74, 96.97, 97.24, 97.42, 97.52, 97.59, 97.64, 97.75],
+        "Birth Rate": [17.6, 17.2, 16.9, 17.2, 17.0, 17.5, 17.1, 16.6, 16.2, 15.4, 14.4, 13.4, 12.9, 12.2, 11.3, 11.0],
+        "Marriage Rate": [8.21, 7.97, 7.99, 8.03, 7.88, 7.77, 7.71, 7.50, 7.09, 6.81, 6.57, 5.86, 6.69, 6.78, 6.65, 6.67]
+    };
+
+    function normalize(arr) {
+        let base = arr[0];
+        return arr.map(v => (v / base) * 100);
+    }
+
+    const colors = {
+        "Muğla": "#FF8C00", "Ankara": "#800080", "İstanbul": "#000000", 
+        "İzmir": "#008080", "Adana": "#DAA520", "Van": "#8B4513",
+        "Birth Rate": "#FF0000", "Literacy": "#008000", "Marriage Rate": "#0000FF"
+    };
+
+    const traces = [];
+    const labels = [];
+
+    for (let key in data) {
+        const isIndicator = ["Birth Rate", "Literacy", "Marriage Rate"].includes(key);
+        const normY = normalize(data[key]);
+        const finalY = normY[normY.length - 1];
+
+        traces.push({
+            x: years, y: normY, mode: 'lines',
+            showlegend: false,
+            line: { width: isIndicator ? 6 : 2.5, color: colors[key], dash: isIndicator ? 'solid' : 'dash' },
+            hoverinfo: 'name+y'
+        });
+
+        labels.push({
+            x: 2024, y: finalY, xref: 'x', yref: 'y',
+            text: ` <b>${key}</b>`, showarrow: false,
+            xanchor: 'left', xshift: 5,
+            font: { size: 14, color: colors[key], family: 'Arial Black' }
+        });
+    }
+
+    const layout = {
+        margin: { r: 180, t: 50, l: 60, b: 60 },
+        xaxis: { title: 'YEAR', range: [2009, 2027], showgrid: true, gridcolor: '#f0f0f0' },
+        yaxis: { title: 'INDEXED CHANGE (2009=100)', zeroline: false, gridcolor: '#f0f0f0' },
+        annotations: labels,
+        plot_bgcolor: 'white'
+    };
+
+    Plotly.newPlot('viz', traces, layout);
+</script>
+</body>
+</html>
